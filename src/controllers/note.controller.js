@@ -56,6 +56,29 @@ const updateNote = async (req, res) => {
 
 };
 
+const deleteNote = async (req, res) => {
+
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    return res.status(400).json({
+        message: "Invalid note ID"
+    });
+}
+
+   const note = await Note.findByIdAndDelete(req.params.id);
+
+   if (!note) {
+    return res.status(404).json({
+        message: "Note not found"
+    });
+  }
+
+  res.status(200).json({
+    message: "Note deleted successfully",
+    data: note
+});
+
+};
+
 
 const createNote = async (req, res) => {
 
@@ -69,4 +92,4 @@ const createNote = async (req, res) => {
     
 };
 
-export { getAllNotes, getSingleNote, createNote, updateNote };
+export { getAllNotes, getSingleNote, createNote, updateNote, deleteNote };

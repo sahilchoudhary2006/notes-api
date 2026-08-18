@@ -4,7 +4,8 @@ import {
     getAllNotes,
     getSingleNote,
     createNote,
-    updateNote
+    updateNote,
+    deleteNote
 } from "../controllers/note.controller.js";
 
 
@@ -16,5 +17,7 @@ router.get("/:id", getSingleNote);
 router.post("/", createNote);
 
 router.patch("/:id", updateNote);
+
+router.delete("/:id", deleteNote);
 
 export default router;
