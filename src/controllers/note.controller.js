@@ -1,5 +1,9 @@
 import Note from "../models/note.models.js";
 import mongoose from "mongoose";
+import ApiError from "../utils/ApiError.js";
+import asyncHandler from "../utils/asyncHandler.js";
+
+
 
 const getAllNotes = async (req, res) => {
     const notes = await Note.find();
@@ -11,22 +15,20 @@ const getAllNotes = async (req, res) => {
 
 };
 
-const getSingleNote = async (req, res) => {
-   
+
+const getSingleNote = asyncHandler(async (req, res) => {
     const note = await Note.findById(req.params.id);
 
-    if(!note) {
-        return res.status(404).json({
-            message: "Note not found"
-        });
+    if (!note) {
+        throw new ApiError(404, "Note not found");
     }
 
     res.status(200).json({
-    message: "Note fetched successfully",
-    data: note
-   });
+        message: "Note fetched successfully",
+        data: note
+    });
+});
 
-};
 
 const updateNote = async (req, res) => {
 
