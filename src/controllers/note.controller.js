@@ -95,3 +95,5 @@ const createNote = async (req, res) => {
 };
 
 export { getAllNotes, getSingleNote, createNote, updateNote, deleteNote };
+
+
