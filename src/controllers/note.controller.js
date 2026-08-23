@@ -60,6 +60,8 @@ const updateNote = async (req, res) => {
 
 const deleteNote = async (req, res) => {
 
+    
+
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
     return res.status(400).json({
         message: "Invalid note ID"
