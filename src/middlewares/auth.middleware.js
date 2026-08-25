@@ -1,7 +1,8 @@
 import jwt from "jsonwebtoken";
 import ApiError from "../utils/ApiError.js";
+import User from "../models/user.models.js";
 
-const authMiddleware = (req, res, next) => {
+const authMiddleware = async (req, res, next) => {
 
     const authHeader = req.headers.authorization;
 
@@ -14,15 +15,24 @@ const authMiddleware = (req, res, next) => {
     if (!token) {
         throw new ApiError(401, "Authentication required");
     }
+
+    let decoded;
+
     try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.userId = decoded.userId;
-    next();
+        decoded = jwt.verify(token, process.env.JWT_SECRET);
     } catch (error) {
         throw new ApiError(401, "Invalid or expired token");
     }
+
+    const user = await User.findById(decoded.userId);
+
+    if (!user) {
+        throw new ApiError(401, "User no longer exists");
+    }
+
+    req.userId = decoded.userId;
+
+    next();
 };
 
-
 export default authMiddleware;
-
