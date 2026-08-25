@@ -6,7 +6,7 @@ import asyncHandler from "../utils/asyncHandler.js";
 
 
 const getAllNotes = async (req, res) => {
-    const notes = await Note.find();
+   const notes = await Note.find({ userId: req.userId });
 
     res.status(200).json({
     message: "Notes fetched successfully",
@@ -17,7 +17,10 @@ const getAllNotes = async (req, res) => {
 
 
 const getSingleNote = asyncHandler(async (req, res) => {
-    const note = await Note.findById(req.params.id);
+   const note = await Note.findOne({
+    _id: req.params.id,
+    userId: req.userId,
+});
 
     if (!note) {
         throw new ApiError(404, "Note not found");
@@ -38,11 +41,14 @@ const updateNote = async (req, res) => {
     });
 }
    
-    const note = await Note.findByIdAndUpdate(
-    req.params.id,
+const note = await Note.findOneAndUpdate(
+    {
+        _id: req.params.id,
+        userId: req.userId,
+    },
     req.body,
     { new: true }
-   );
+);
    
    if (!note) {
     return res.status(404).json({
@@ -68,7 +74,10 @@ const deleteNote = async (req, res) => {
     });
 }
 
-   const note = await Note.findByIdAndDelete(req.params.id);
+   const note = await Note.findOneAndDelete({
+    _id: req.params.id,
+    userId: req.userId,
+});
 
    if (!note) {
     return res.status(404).json({
@@ -86,7 +95,12 @@ const deleteNote = async (req, res) => {
 
 const createNote = async (req, res) => {
 
-    const note = await Note.create(req.body);
+    const userId = req.userId;
+
+    const note = await Note.create({
+    ...req.body,
+    userId,
+});
 
     res.status(201).json({
         message: "Note created successfully",

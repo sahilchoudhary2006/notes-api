@@ -1,6 +1,7 @@
 import { Router } from "express";
 import validate from "../middlewares/validate.middleware.js";
 import noteSchema, { updateNoteSchema } from "../validators/note.validator.js";
+import authMiddleware from "../middlewares/auth.middleware.js";
 
 import {
     getAllNotes,
@@ -13,13 +14,13 @@ import {
 
 const router = Router();
 
-router.get("/", getAllNotes);
-router.get("/:id", getSingleNote);
+router.get("/", authMiddleware, getAllNotes);
+router.get("/:id", authMiddleware, getSingleNote);
 
-router.post("/", validate(noteSchema), createNote);
+router.post("/", authMiddleware, validate(noteSchema), createNote);
 
-router.patch("/:id", validate(updateNoteSchema), updateNote);
+router.patch("/:id", authMiddleware, validate(updateNoteSchema), updateNote);
 
-router.delete("/:id", deleteNote);
+router.delete("/:id", authMiddleware, deleteNote);
 
 export default router;
