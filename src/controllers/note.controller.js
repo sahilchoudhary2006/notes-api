@@ -14,6 +14,10 @@ const getAllNotes = async (req, res) => {
 
     const search = req.query.search?.trim();
 
+    const sort = req.query.sort || "latest";
+
+    const sortOrder = sort === "oldest" ? 1 : -1;   
+
     const filter = {
     userId: req.userId,
 };
@@ -26,6 +30,7 @@ if (search) {
 }
 
     const notes = await Note.find(filter)
+    .sort({ createdAt: sortOrder })
     .skip(skip)
     .limit(limit);
 
@@ -37,6 +42,7 @@ if (search) {
     message: "Notes fetched successfully",
     data: notes,
      search: search || null,
+     sort,
     pagination: {
         page,
         limit,
