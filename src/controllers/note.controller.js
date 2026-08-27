@@ -4,54 +4,46 @@ import ApiError from "../utils/ApiError.js";
 import asyncHandler from "../utils/asyncHandler.js";
 
 
-
 const getAllNotes = async (req, res) => {
 
-    const page = Math.max(Number(req.query.page) || 1, 1);
-   const limit = Math.min(Math.max(Number(req.query.limit) || 10, 1), 100);
+    const { page, limit, search, sort } = req.validated.query;
 
     const skip = (page - 1) * limit;
 
-    const search = req.query.search?.trim();
-
-    const sort = req.query.sort || "latest";
-
-    const sortOrder = sort === "oldest" ? 1 : -1;   
+    const sortOrder = sort === "oldest" ? 1 : -1;
 
     const filter = {
-    userId: req.userId,
-};
+        userId: req.userId,
+    };
 
-if (search) {
-    filter.$or = [
-        { title: { $regex: search, $options: "i" } },
-        { description: { $regex: search, $options: "i" } },
-    ];
-}
+    if (search) {
+        filter.$or = [
+            { title: { $regex: search, $options: "i" } },
+            { description: { $regex: search, $options: "i" } },
+        ];
+    }
 
     const notes = await Note.find(filter)
-    .sort({ createdAt: sortOrder })
-    .skip(skip)
-    .limit(limit);
+        .sort({ createdAt: sortOrder })
+        .skip(skip)
+        .limit(limit);
 
     const totalNotes = await Note.countDocuments(filter);
 
     const totalPages = Math.ceil(totalNotes / limit);
 
-   res.status(200).json({
-    message: "Notes fetched successfully",
-    data: notes,
-     search: search || null,
-     sort,
-    pagination: {
-        page,
-        limit,
-        totalNotes,
-        totalPages
-    }
-});
-
-
+    res.status(200).json({
+        message: "Notes fetched successfully",
+        data: notes,
+        search: search || null,
+        sort,
+        pagination: {
+            page,
+            limit,
+            totalNotes,
+            totalPages
+        }
+    });
 };
 
 
