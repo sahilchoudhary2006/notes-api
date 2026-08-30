@@ -1,5 +1,5 @@
-const errorHandler = (err, req, res, next) => {  // express recognizes this as an error handling middleware because it has four parameters
-
+const errorHandler = (err, req, res, next) => {
+    console.error("Backend Error:", err);
     const statusCode = err.statusCode || 500;  
    
     res.status(statusCode).json({  // what does this do whenever some error occurs in the application, it will send a response with status code 500 (Internal Server Error) and a JSON object containing the error message
