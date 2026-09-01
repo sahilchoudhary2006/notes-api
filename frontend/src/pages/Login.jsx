@@ -5,10 +5,11 @@ import { z } from 'zod';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
-import { loginUser } from '../services/auth.api';
+import { loginUser, googleLogin } from '../services/auth.api';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
+import { GoogleLogin } from '@react-oauth/google';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -33,6 +34,20 @@ const Login = () => {
       navigate('/dashboard');
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to login');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      setIsLoading(true);
+      const res = await googleLogin(credentialResponse.credential);
+      login(res.token);
+      toast.success(res.message || 'Logged in successfully with Google');
+      navigate('/dashboard');
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to login with Google');
     } finally {
       setIsLoading(false);
     }
@@ -72,6 +87,21 @@ const Login = () => {
             Log In
           </Button>
         </form>
+
+        <div className="mt-6 flex items-center justify-center">
+          <div className="border-t border-gray-200 dark:border-gray-700 flex-grow"></div>
+          <span className="px-3 text-sm text-gray-500">or</span>
+          <div className="border-t border-gray-200 dark:border-gray-700 flex-grow"></div>
+        </div>
+
+        <div className="mt-6 flex justify-center">
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={() => {
+              toast.error('Google Login Failed');
+            }}
+          />
+        </div>
 
         <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
           Don't have an account?{' '}
