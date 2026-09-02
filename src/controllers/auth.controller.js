@@ -3,7 +3,7 @@ import ApiError from "../utils/ApiError.js";
 import bcrypt from "bcrypt";
 import asyncHandler from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken";
-import { OAuth2Client } from "google-auth-library";
+import axios from "axios";
 
 const registerUser = asyncHandler(async (req, res) => {
 
@@ -65,19 +65,19 @@ const loginUser = asyncHandler(async (req, res) => {
 })
 
 const googleAuth = asyncHandler(async (req, res) => {
-    const { credential } = req.body;
+    const { accessToken } = req.body;
     
-    if (!credential) {
-        throw new ApiError(400, "Google credential is required");
+    if (!accessToken) {
+        throw new ApiError(400, "Google access token is required");
     }
 
-    const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-    const ticket = await client.verifyIdToken({
-        idToken: credential,
-        audience: process.env.GOOGLE_CLIENT_ID,
+    const response = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: {
+            Authorization: `Bearer ${accessToken}`
+        }
     });
     
-    const payload = ticket.getPayload();
+    const payload = response.data;
     const { sub: googleId, email, name } = payload;
 
     let user = await User.findOne({ email });
