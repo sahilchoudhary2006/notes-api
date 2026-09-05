@@ -73,8 +73,5 @@ A modern, highly interactive, full-stack notes application designed to handle ev
 - **Frontend**: [NoteFlow on Vercel](https://noteflow-black-nu.vercel.app/)
 - **Backend API**: [Hosted on Render](https://notes-api-h3ha.onrender.com)
 
-## 🤝 Contributing
-Contributions, issues and feature requests are welcome! Feel free to check the issues page.
-
 ## 📝 License
-This project is open-source and available under the MIT License.
+This project is proprietary and closed-source. All rights reserved.
