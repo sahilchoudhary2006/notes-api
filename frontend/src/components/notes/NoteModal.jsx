@@ -6,7 +6,8 @@ import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { cn } from '../../utils/cn';
-import { Plus, Trash2, CheckSquare, List as ListIcon, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus, Trash2, CheckSquare, List as ListIcon, ArrowUp, ArrowDown, PenTool } from 'lucide-react';
+import DrawingEditor from './DrawingEditor';
 
 const noteSchema = z.object({
   title: z.string().min(1, 'Title is required').max(100, 'Title is too long'),
@@ -18,6 +19,10 @@ const noteSchema = z.object({
       text: z.string().min(1, "Item cannot be empty"),
       completed: z.boolean().default(false)
     }))
+  })).optional().default([]),
+  drawings: z.array(z.object({
+    title: z.string().optional(),
+    data: z.string().optional().default("[]")
   })).optional().default([])
 });
 
@@ -150,12 +155,17 @@ const NoteModal = ({ isOpen, onClose, onSubmit, isLoading, defaultValues }) => {
 
   const { register, handleSubmit, reset, control, watch, setValue, formState: { errors } } = useForm({
     resolver: zodResolver(noteSchema),
-    defaultValues: { title: '', description: '', lists: [] }
+    defaultValues: { title: '', description: '', lists: [], drawings: [] }
   });
 
   const { fields: listFields, append: appendList, remove: removeList } = useFieldArray({
     control,
     name: 'lists'
+  });
+
+  const { fields: drawingFields, append: appendDrawing, remove: removeDrawing } = useFieldArray({
+    control,
+    name: 'drawings'
   });
 
   const descriptionContent = watch('description') || '';
@@ -164,14 +174,17 @@ const NoteModal = ({ isOpen, onClose, onSubmit, isLoading, defaultValues }) => {
   useEffect(() => {
     if (isOpen) {
       if (defaultValues) {
-        // Map lists to ensure proper defaults if they exist
         const defaultLists = defaultValues.lists ? defaultValues.lists.map(list => ({
           ...list,
           items: list.items || []
         })) : [];
-        reset({ title: defaultValues.title, description: defaultValues.description || '', lists: defaultLists });
+        const defaultDrawings = defaultValues.drawings ? defaultValues.drawings.map(d => ({
+          ...d,
+          data: d.data || "[]"
+        })) : [];
+        reset({ title: defaultValues.title, description: defaultValues.description || '', lists: defaultLists, drawings: defaultDrawings });
       } else {
-        reset({ title: '', description: '', lists: [] });
+        reset({ title: '', description: '', lists: [], drawings: [] });
       }
     }
   }, [isOpen, defaultValues, reset]);
@@ -208,13 +221,13 @@ const NoteModal = ({ isOpen, onClose, onSubmit, isLoading, defaultValues }) => {
           </div>
         </div>
 
-        {/* Lists Section */}
+        {/* Content Blocks Section */}
         <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex flex-wrap items-center justify-between mb-3 gap-2">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Lists
+              Blocks
             </label>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button 
                 type="button" 
                 variant="outline" 
@@ -223,7 +236,7 @@ const NoteModal = ({ isOpen, onClose, onSubmit, isLoading, defaultValues }) => {
                 className="text-xs py-1 h-auto"
               >
                 <CheckSquare className="h-3.5 w-3.5 mr-1.5" />
-                Add Checklist
+                Checklist
               </Button>
               <Button 
                 type="button" 
@@ -233,7 +246,17 @@ const NoteModal = ({ isOpen, onClose, onSubmit, isLoading, defaultValues }) => {
                 className="text-xs py-1 h-auto"
               >
                 <ListIcon className="h-3.5 w-3.5 mr-1.5" />
-                Add Bullets
+                Bullets
+              </Button>
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="sm"
+                onClick={() => appendDrawing({ title: '', data: '[]' })}
+                className="text-xs py-1 h-auto"
+              >
+                <PenTool className="h-3.5 w-3.5 mr-1.5" />
+                Whiteboard
               </Button>
             </div>
           </div>
@@ -251,9 +274,20 @@ const NoteModal = ({ isOpen, onClose, onSubmit, isLoading, defaultValues }) => {
               />
             ))}
             
-            {listFields.length === 0 && (
+            {drawingFields.map((drawingField, index) => (
+              <DrawingEditor
+                key={drawingField.id}
+                drawingIndex={index}
+                initialData={drawingField.data}
+                register={register}
+                removeDrawing={removeDrawing}
+                setValue={setValue}
+              />
+            ))}
+            
+            {listFields.length === 0 && drawingFields.length === 0 && (
               <div className="text-center py-6 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg text-gray-500 dark:text-gray-400 text-sm">
-                No lists added yet.
+                No blocks added yet. Use the buttons above to add lists or whiteboards.
               </div>
             )}
           </div>

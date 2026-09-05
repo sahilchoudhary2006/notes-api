@@ -11,6 +11,11 @@ const listSchema = new mongoose.Schema({
     items: [listItemSchema]
 });
 
+const drawingSchema = new mongoose.Schema({
+    title: { type: String, default: "" },
+    data: { type: String, default: "[]" } // serialized strokes/paths JSON
+});
+
 const noteSchema = new mongoose.Schema({
     title: {
         type: String,
@@ -22,6 +27,10 @@ const noteSchema = new mongoose.Schema({
     },
     lists: {
         type: [listSchema],
+        default: []
+    },
+    drawings: {
+        type: [drawingSchema],
         default: []
     },
     userId: {

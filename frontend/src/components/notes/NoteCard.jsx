@@ -97,6 +97,14 @@ const NoteCard = ({ note, onEdit, onDelete, onToggleItem }) => {
             )}
           </div>
         )}
+
+        {/* Drawings Indicator */}
+        {note.drawings && note.drawings.length > 0 && (
+          <div className="mt-3 flex items-center gap-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 w-fit px-2 py-1 rounded">
+            <span className="h-3 w-3">🎨</span>
+            <span>{note.drawings.length} {note.drawings.length === 1 ? 'Whiteboard' : 'Whiteboards'}</span>
+          </div>
+        )}
       </div>
       
       <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">

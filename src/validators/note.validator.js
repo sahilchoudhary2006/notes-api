@@ -13,6 +13,11 @@ const noteSchema = z.object({
             completed: z.boolean().default(false)
         }))
     })).optional().default([]),
+    drawings: z.array(z.object({
+        _id: z.string().optional(),
+        title: z.string().optional().default(""),
+        data: z.string().optional().default("[]")
+    })).optional().default([]),
 }).strict();  // strict() method ensures that the object being validated does not contain any additional properties that are not defined in the schema. If any extra properties are present, the validation will fail.
 
 const updateNoteSchema = noteSchema.partial().strict();

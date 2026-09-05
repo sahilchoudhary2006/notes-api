@@ -22,6 +22,7 @@
     "react-hook-form": "^7.86.0",
     "react-hot-toast": "^2.6.0",
     "react-router-dom": "^7.18.2",
+    "react-sketch-canvas": "^8.0.0",
     "tailwind-merge": "^3.6.0",
     "zod": "^3.25.76"
   },
