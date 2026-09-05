@@ -10,7 +10,8 @@ const NoteCard = ({ note, onEdit, onDelete, onToggleItem }) => {
 
   return (
     <motion.div 
-      className="group relative flex flex-col justify-between p-5 rounded-xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow h-full"
+      onClick={() => onEdit(note)}
+      className="group relative flex flex-col justify-between p-5 rounded-xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow h-full cursor-pointer"
       layout
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -105,13 +106,19 @@ const NoteCard = ({ note, onEdit, onDelete, onToggleItem }) => {
         </div>
         <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
           <button 
-            onClick={() => onEdit(note)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(note);
+            }}
             className="p-1.5 rounded text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
           >
             <Edit2 className="h-4 w-4" />
           </button>
           <button 
-            onClick={() => onDelete(note)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(note);
+            }}
             className="p-1.5 rounded text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
           >
             <Trash2 className="h-4 w-4" />
