@@ -320,7 +320,7 @@ const Dashboard = () => {
       {/* Floating Action Button (FAB) */}
       <div className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-50 flex flex-col items-end gap-3">
         <AnimatePresence>
-          {isFabOpen && (
+          {isFabOpen && filterType === 'all' && (
             <motion.div
               initial={{ opacity: 0, y: 15, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -362,10 +362,16 @@ const Dashboard = () => {
         </AnimatePresence>
 
         <button
-          onClick={() => setIsFabOpen(!isFabOpen)}
+          onClick={() => {
+            if (filterType !== 'all') {
+              openCreateModal(filterType);
+            } else {
+              setIsFabOpen(!isFabOpen);
+            }
+          }}
           className={cn(
             "p-4 rounded-full shadow-xl transition-all duration-300 hover:scale-105 active:scale-95",
-            isFabOpen ? "bg-gray-800 dark:bg-gray-700 text-white rotate-45" : "bg-blue-600 hover:bg-blue-700 text-white"
+            isFabOpen && filterType === 'all' ? "bg-gray-800 dark:bg-gray-700 text-white rotate-45" : "bg-blue-600 hover:bg-blue-700 text-white"
           )}
         >
           <Plus className="h-6 w-6" />
