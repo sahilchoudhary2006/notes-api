@@ -9,6 +9,15 @@ import { cn } from '../../utils/cn';
 import { Plus, Trash2, CheckSquare, List as ListIcon, ArrowUp, ArrowDown, PenTool } from 'lucide-react';
 import DrawingEditor from './DrawingEditor';
 
+const SUGGESTED_TAGS = [
+  { name: 'Work', color: '#3b82f6' },
+  { name: 'Personal', color: '#10b981' },
+  { name: 'Important', color: '#ef4444' },
+  { name: 'Ideas', color: '#f59e0b' },
+  { name: 'Todo', color: '#8b5cf6' },
+  { name: 'Design', color: '#ec4899' }
+];
+
 const noteSchema = z.object({
   title: z.string().min(1, 'Title is required').max(100, 'Title is too long'),
   description: z.string().max(5000, 'Description is too long').optional().default(""),
@@ -187,9 +196,18 @@ const NoteModal = ({ isOpen, onClose, onSubmit, isLoading, defaultValues, mode =
       if (newTagName.trim()) {
         const colors = ["#ef4444", "#f97316", "#f59e0b", "#10b981", "#3b82f6", "#6366f1", "#8b5cf6", "#ec4899"];
         const randomColor = colors[Math.floor(Math.random() * colors.length)];
-        appendTag({ name: newTagName.trim(), color: randomColor });
+        // Check if tag already exists
+        if (!tagFields.some(t => t.name.toLowerCase() === newTagName.trim().toLowerCase())) {
+          appendTag({ name: newTagName.trim(), color: randomColor });
+        }
         setNewTagName('');
       }
+    }
+  };
+
+  const handleAddSuggestedTag = (suggestedTag) => {
+    if (!tagFields.some(t => t.name.toLowerCase() === suggestedTag.name.toLowerCase())) {
+      appendTag({ name: suggestedTag.name, color: suggestedTag.color });
     }
   };
 
@@ -289,6 +307,23 @@ const NoteModal = ({ isOpen, onClose, onSubmit, isLoading, defaultValues, mode =
             >
               Add
             </Button>
+          </div>
+          
+          <div className="mt-2">
+            <span className="text-xs text-gray-500 dark:text-gray-400 mr-2">Suggestions:</span>
+            <div className="inline-flex flex-wrap gap-1.5">
+              {SUGGESTED_TAGS.map(tag => (
+                <button
+                  key={tag.name}
+                  type="button"
+                  onClick={() => handleAddSuggestedTag(tag)}
+                  className="text-[10px] font-semibold px-2 py-0.5 rounded-full border transition-transform hover:scale-105 active:scale-95"
+                  style={{ backgroundColor: `${tag.color}15`, borderColor: `${tag.color}30`, color: tag.color }}
+                >
+                  + {tag.name}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
