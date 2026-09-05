@@ -1,15 +1,16 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Edit2, Trash2, Calendar } from 'lucide-react';
+import { Edit2, Trash2, Calendar, CheckSquare, List as ListIcon } from 'lucide-react';
+import { cn } from '../../utils/cn';
 
-const NoteCard = ({ note, onEdit, onDelete }) => {
+const NoteCard = ({ note, onEdit, onDelete, onToggleItem }) => {
   const formattedDate = new Date(note.createdAt).toLocaleDateString('en-US', {
     month: 'short', day: 'numeric', year: 'numeric'
   });
 
   return (
     <motion.div 
-      className="group relative flex flex-col justify-between p-5 rounded-xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow"
+      className="group relative flex flex-col justify-between p-5 rounded-xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow h-full"
       layout
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -20,9 +21,81 @@ const NoteCard = ({ note, onEdit, onDelete }) => {
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2 line-clamp-2">
           {note.title}
         </h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap line-clamp-4">
-          {note.description}
-        </p>
+        
+        {note.description && (
+          <p className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap line-clamp-4 mb-3">
+            {note.description}
+          </p>
+        )}
+
+        {/* Lists Preview */}
+        {note.lists && note.lists.length > 0 && (
+          <div className="space-y-4 mt-2">
+            {note.lists.slice(0, 2).map((list) => {
+              const completedCount = list.items.filter(i => i.completed).length;
+              const totalCount = list.items.length;
+              
+              return (
+                <div key={list._id || Math.random()} className="text-sm">
+                  {list.title && (
+                    <div className="flex items-center justify-between mb-1">
+                      <strong className="text-gray-800 dark:text-gray-200">{list.title}</strong>
+                      {list.type === 'checklist' && totalCount > 0 && (
+                        <span className="text-xs text-gray-500">
+                          {completedCount} of {totalCount}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  
+                  <div className="space-y-1">
+                    {list.items.slice(0, 3).map((item) => (
+                      <div key={item._id || Math.random()} className="flex items-start gap-2">
+                        {list.type === 'checklist' ? (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onToggleItem(note._id, list._id, item._id, !item.completed);
+                            }}
+                            className={cn(
+                              "mt-0.5 flex-shrink-0 h-4 w-4 rounded flex items-center justify-center border transition-colors",
+                              item.completed 
+                                ? "bg-blue-500 border-blue-500 text-white" 
+                                : "border-gray-300 dark:border-gray-600 hover:border-blue-400"
+                            )}
+                          >
+                            {item.completed && <CheckSquare className="h-3 w-3" />}
+                          </button>
+                        ) : (
+                          <span className="mt-1 flex-shrink-0 h-1.5 w-1.5 rounded-full bg-gray-400 dark:bg-gray-500" />
+                        )}
+                        <span className={cn(
+                          "line-clamp-1",
+                          list.type === 'checklist' && item.completed ? "line-through text-gray-400" : "text-gray-700 dark:text-gray-300"
+                        )}>
+                          {item.text}
+                        </span>
+                      </div>
+                    ))}
+                    
+                    {list.items.length > 3 && (
+                      <p className="text-xs text-gray-400 italic mt-1">
+                        + {list.items.length - 3} more items...
+                      </p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+            
+            {note.lists.length > 2 && (
+              <div className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 font-medium">
+                <ListIcon className="h-3 w-3" />
+                <span>+ {note.lists.length - 2} more lists</span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
       
       <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">

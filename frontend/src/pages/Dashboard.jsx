@@ -107,6 +107,48 @@ const Dashboard = () => {
     setDeleteModalOpen(true);
   };
 
+  // Optimistic UI update for checklists
+  const toggleNoteItem = async (noteId, listId, itemId, completed) => {
+    // 1. Optimistically update UI
+    setNotes(currentNotes => currentNotes.map(note => {
+      if (note._id === noteId) {
+        return {
+          ...note,
+          lists: note.lists.map(list => {
+            if (list._id === listId) {
+              return {
+                ...list,
+                items: list.items.map(item => item._id === itemId ? { ...item, completed } : item)
+              };
+            }
+            return list;
+          })
+        };
+      }
+      return note;
+    }));
+
+    // 2. Persist to API
+    try {
+      // Find the deeply updated note to send to the server
+      let updatedNoteData;
+      setNotes(currentNotes => {
+        const found = currentNotes.find(n => n._id === noteId);
+        if (found) {
+           updatedNoteData = { lists: found.lists };
+        }
+        return currentNotes;
+      });
+      
+      if (updatedNoteData) {
+        await updateNote(noteId, updatedNoteData);
+      }
+    } catch (error) {
+      toast.error('Failed to update list item');
+      fetchNotes(); // Revert on failure
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
@@ -169,6 +211,7 @@ const Dashboard = () => {
                   note={note} 
                   onEdit={openEditModal}
                   onDelete={openDeleteModal}
+                  onToggleItem={toggleNoteItem}
                 />
               ))}
             </AnimatePresence>
