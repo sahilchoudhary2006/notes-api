@@ -155,7 +155,8 @@ const NoteModal = ({ isOpen, onClose, onSubmit, isLoading, defaultValues, mode =
 
   const { register, handleSubmit, reset, control, watch, setValue, formState: { errors } } = useForm({
     resolver: zodResolver(noteSchema),
-    defaultValues: { title: '', description: '', lists: [], drawings: [] }
+    defaultValues: { title: '', description: '', lists: [], drawings: [] },
+    shouldUnregister: true
   });
 
   const { fields: listFields, append: appendList, remove: removeList } = useFieldArray({
