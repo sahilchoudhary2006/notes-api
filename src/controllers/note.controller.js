@@ -23,6 +23,12 @@ const getAllNotes = async (req, res) => {
         ];
     }
 
+    if (req.validated.query.tab === 'archive') {
+        filter.isArchived = true;
+    } else {
+        filter.isArchived = false;
+    }
+
     if (req.validated.query.type) {
         if (req.validated.query.type === 'drawing') {
             filter["drawings.0"] = { $exists: true };
@@ -35,7 +41,7 @@ const getAllNotes = async (req, res) => {
     }
 
     const notes = await Note.find(filter)
-        .sort({ createdAt: sortOrder })
+        .sort({ isPinned: -1, createdAt: sortOrder })
         .skip(skip)
         .limit(limit);
 

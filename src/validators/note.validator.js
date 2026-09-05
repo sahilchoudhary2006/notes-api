@@ -18,6 +18,12 @@ const noteSchema = z.object({
         title: z.string().optional().default(""),
         data: z.string().optional().default("[]")
     })).optional().default([]),
+    isPinned: z.boolean().optional().default(false),
+    isArchived: z.boolean().optional().default(false),
+    tags: z.array(z.object({
+        name: z.string().min(1),
+        color: z.string().optional().default("#3b82f6")
+    })).optional().default([]),
 }).strict();  // strict() method ensures that the object being validated does not contain any additional properties that are not defined in the schema. If any extra properties are present, the validation will fail.
 
 const updateNoteSchema = noteSchema.partial().strict();
@@ -28,6 +34,7 @@ const noteQuerySchema = z.object({
     search: z.string().trim().optional(),
     sort: z.enum(["latest", "oldest"]).default("latest"),
     type: z.enum(["all", "text", "list", "drawing"]).default("all"),
+    tab: z.enum(["all", "archive"]).default("all"),
 }).strict();
 
 export default noteSchema;

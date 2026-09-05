@@ -33,6 +33,18 @@ const noteSchema = new mongoose.Schema({
         type: [drawingSchema],
         default: []
     },
+    isPinned: {
+        type: Boolean,
+        default: false
+    },
+    isArchived: {
+        type: Boolean,
+        default: false
+    },
+    tags: [{
+        name: { type: String, required: true },
+        color: { type: String, default: "#3b82f6" } // Default to blue
+    }],
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",

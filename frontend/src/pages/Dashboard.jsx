@@ -22,6 +22,8 @@ const Dashboard = () => {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [sort, setSort] = useState('latest');
   const [filterType, setFilterType] = useState('all');
+  const [activeTab, setActiveTab] = useState('all'); // 'all' or 'archive'
+  const [layout, setLayout] = useState('grid'); // 'grid' or 'list'
 
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState('default');
@@ -70,7 +72,7 @@ const Dashboard = () => {
   const fetchNotes = useCallback(async () => {
     try {
       setIsLoading(true);
-      const res = await getNotes({ page, limit: 12, search: debouncedSearch, sort, type: filterType });
+      const res = await getNotes({ page, limit: 12, search: debouncedSearch, sort, type: filterType, tab: activeTab });
       setNotes(res.data);
       setPagination(res.pagination);
     } catch (error) {
@@ -78,7 +80,7 @@ const Dashboard = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [page, debouncedSearch, sort, filterType]);
+  }, [page, debouncedSearch, sort, filterType, activeTab]);
 
   useEffect(() => {
     fetchNotes();
@@ -145,6 +147,31 @@ const Dashboard = () => {
     setDeleteModalOpen(true);
   };
 
+  const handleTogglePin = async (note) => {
+    try {
+      // Optimistic update
+      setNotes(currentNotes => currentNotes.map(n => n._id === note._id ? { ...n, isPinned: !n.isPinned } : n));
+      await updateNote(note._id, { isPinned: !note.isPinned });
+      fetchNotes(); // Re-fetch to sort correctly
+    } catch (error) {
+      toast.error('Failed to update pin status');
+      fetchNotes(); // Revert
+    }
+  };
+
+  const handleToggleArchive = async (note) => {
+    try {
+      // Optimistic update
+      setNotes(currentNotes => currentNotes.filter(n => n._id !== note._id));
+      await updateNote(note._id, { isArchived: !note.isArchived });
+      toast.success(note.isArchived ? 'Note unarchived' : 'Note archived');
+      fetchNotes();
+    } catch (error) {
+      toast.error('Failed to archive note');
+      fetchNotes(); // Revert
+    }
+  };
+
   // Optimistic UI update for checklists
   const toggleNoteItem = async (noteId, listId, itemId, completed) => {
     // 1. Optimistically update UI
@@ -196,6 +223,27 @@ const Dashboard = () => {
             {pagination ? `Showing ${notes.length} of ${pagination.totalNotes} notes` : 'Loading...'}
           </p>
         </div>
+        
+        <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
+          <button
+            onClick={() => { setActiveTab('all'); setPage(1); }}
+            className={cn(
+              "px-4 py-1.5 rounded-md text-sm font-medium transition-colors",
+              activeTab === 'all' ? "bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white" : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+            )}
+          >
+            Active
+          </button>
+          <button
+            onClick={() => { setActiveTab('archive'); setPage(1); }}
+            className={cn(
+              "px-4 py-1.5 rounded-md text-sm font-medium transition-colors",
+              activeTab === 'archive' ? "bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white" : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+            )}
+          >
+            Archive
+          </button>
+        </div>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 mb-8">
@@ -234,6 +282,28 @@ const Dashboard = () => {
               <option value="oldest">Oldest First</option>
             </select>
           </div>
+          <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-md sm:ml-2">
+            <button
+              onClick={() => setLayout('grid')}
+              className={cn(
+                "p-1.5 rounded transition-colors",
+                layout === 'grid' ? "bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white" : "text-gray-500 hover:text-gray-900 dark:hover:text-white"
+              )}
+              title="Grid View"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            </button>
+            <button
+              onClick={() => setLayout('list')}
+              className={cn(
+                "p-1.5 rounded transition-colors",
+                layout === 'list' ? "bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white" : "text-gray-500 hover:text-gray-900 dark:hover:text-white"
+              )}
+              title="List View"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -251,7 +321,10 @@ const Dashboard = () => {
       ) : notes.length > 0 ? (
         <>
           <motion.div 
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            className={cn(
+              "grid gap-6",
+              layout === 'grid' ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"
+            )}
             layout
           >
             <AnimatePresence>
@@ -262,6 +335,8 @@ const Dashboard = () => {
                   onEdit={openEditModal}
                   onDelete={openDeleteModal}
                   onToggleItem={toggleNoteItem}
+                  onTogglePin={handleTogglePin}
+                  onToggleArchive={handleToggleArchive}
                 />
               ))}
             </AnimatePresence>

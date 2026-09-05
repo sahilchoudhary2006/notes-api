@@ -23,6 +23,10 @@ const noteSchema = z.object({
   drawings: z.array(z.object({
     title: z.string().optional(),
     data: z.string().optional().default("[]")
+  })).optional().default([]),
+  tags: z.array(z.object({
+    name: z.string().min(1),
+    color: z.string().optional().default("#3b82f6")
   })).optional().default([])
 });
 
@@ -156,7 +160,7 @@ const NoteModal = ({ isOpen, onClose, onSubmit, isLoading, defaultValues, mode =
 
   const { register, handleSubmit, reset, control, watch, setValue, formState: { errors } } = useForm({
     resolver: zodResolver(noteSchema),
-    defaultValues: { title: '', description: '', lists: [], drawings: [] },
+    defaultValues: { title: '', description: '', lists: [], drawings: [], tags: [] },
     shouldUnregister: true
   });
 
@@ -169,6 +173,25 @@ const NoteModal = ({ isOpen, onClose, onSubmit, isLoading, defaultValues, mode =
     control,
     name: 'drawings'
   });
+
+  const { fields: tagFields, append: appendTag, remove: removeTag } = useFieldArray({
+    control,
+    name: 'tags'
+  });
+
+  const [newTagName, setNewTagName] = useState('');
+
+  const handleAddTag = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (newTagName.trim()) {
+        const colors = ["#ef4444", "#f97316", "#f59e0b", "#10b981", "#3b82f6", "#6366f1", "#8b5cf6", "#ec4899"];
+        const randomColor = colors[Math.floor(Math.random() * colors.length)];
+        appendTag({ name: newTagName.trim(), color: randomColor });
+        setNewTagName('');
+      }
+    }
+  };
 
   const descriptionContent = watch('description') || '';
   const charCount = descriptionContent.length;
@@ -184,9 +207,10 @@ const NoteModal = ({ isOpen, onClose, onSubmit, isLoading, defaultValues, mode =
           ...d,
           data: d.data || "[]"
         })) : [];
-        reset({ title: defaultValues.title, description: defaultValues.description || '', lists: defaultLists, drawings: defaultDrawings });
+        const defaultTags = defaultValues.tags || [];
+        reset({ title: defaultValues.title, description: defaultValues.description || '', lists: defaultLists, drawings: defaultDrawings, tags: defaultTags });
       } else {
-        reset({ title: '', description: '', lists: [], drawings: [] });
+        reset({ title: '', description: '', lists: [], drawings: [], tags: [] });
       }
     }
   }, [isOpen, defaultValues, reset]);
@@ -224,6 +248,40 @@ const NoteModal = ({ isOpen, onClose, onSubmit, isLoading, defaultValues, mode =
             </div>
           </div>
         )}
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Tags (Optional)
+          </label>
+          <div className="flex flex-wrap gap-2 mb-2">
+            {tagFields.map((tag, index) => (
+              <span 
+                key={tag.id} 
+                className="flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full border group"
+                style={{ backgroundColor: `${tag.color}15`, borderColor: `${tag.color}30`, color: tag.color }}
+              >
+                {tag.name}
+                <button 
+                  type="button" 
+                  onClick={() => removeTag(index)}
+                  className="hover:bg-black/10 dark:hover:bg-white/20 rounded-full p-0.5"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </button>
+                <input type="hidden" {...register(`tags.${index}.name`)} />
+                <input type="hidden" {...register(`tags.${index}.color`)} />
+              </span>
+            ))}
+          </div>
+          <input
+            type="text"
+            placeholder="Type a tag and press Enter"
+            value={newTagName}
+            onChange={(e) => setNewTagName(e.target.value)}
+            onKeyDown={handleAddTag}
+            className="w-full text-sm rounded-md border border-gray-300 bg-transparent px-3 py-2 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent dark:border-gray-700 dark:text-gray-50"
+          />
+        </div>
 
         {/* Content Blocks Section */}
         {mode !== 'text' && (
