@@ -81,7 +81,7 @@ const Dashboard = () => {
   const handleCreateOrUpdateNote = async (data) => {
     try {
       setIsSubmitting(true);
-      if (editingNote) {
+      if (editingNote && editingNote._id) {
         await updateNote(editingNote._id, data);
         toast.success('Note updated successfully');
       } else {
