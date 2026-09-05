@@ -60,6 +60,7 @@ const ListEditor = ({ listIndex, control, register, removeList, watch, setValue 
           placeholder="List Title (optional)"
           className="bg-transparent text-sm font-semibold focus:outline-none focus:border-b border-blue-500 w-full max-w-[200px]"
         />
+        <input type="hidden" {...register(`lists.${listIndex}.type`)} />
         <div className="flex gap-2 items-center text-gray-500">
           <span className="text-xs uppercase bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">
             {listType}
