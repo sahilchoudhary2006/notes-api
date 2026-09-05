@@ -268,19 +268,28 @@ const NoteModal = ({ isOpen, onClose, onSubmit, isLoading, defaultValues, mode =
                 >
                   <Trash2 className="h-3 w-3" />
                 </button>
-                <input type="hidden" {...register(`tags.${index}.name`)} />
-                <input type="hidden" {...register(`tags.${index}.color`)} />
+                <input type="hidden" {...register(`tags.${index}.name`)} defaultValue={tag.name} />
+                <input type="hidden" {...register(`tags.${index}.color`)} defaultValue={tag.color} />
               </span>
             ))}
           </div>
-          <input
-            type="text"
-            placeholder="Type a tag and press Enter"
-            value={newTagName}
-            onChange={(e) => setNewTagName(e.target.value)}
-            onKeyDown={handleAddTag}
-            className="w-full text-sm rounded-md border border-gray-300 bg-transparent px-3 py-2 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent dark:border-gray-700 dark:text-gray-50"
-          />
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="Type a tag and press Enter"
+              value={newTagName}
+              onChange={(e) => setNewTagName(e.target.value)}
+              onKeyDown={handleAddTag}
+              className="flex-1 text-sm rounded-md border border-gray-300 bg-transparent px-3 py-2 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent dark:border-gray-700 dark:text-gray-50"
+            />
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => handleAddTag({ key: 'Enter', preventDefault: () => {} })}
+            >
+              Add
+            </Button>
+          </div>
         </div>
 
         {/* Content Blocks Section */}
