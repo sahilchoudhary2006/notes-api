@@ -23,18 +23,20 @@ const Dashboard = () => {
   const [sort, setSort] = useState('latest');
 
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState('default');
   const [isFabOpen, setIsFabOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingNote, setEditingNote] = useState(null);
 
   const openCreateModal = (type) => {
     setIsFabOpen(false);
+    setModalMode(type);
     if (type === 'list') {
       setEditingNote({ title: '', description: '', lists: [{ title: '', type: 'checklist', items: [] }], drawings: [] });
     } else if (type === 'drawing') {
       setEditingNote({ title: '', description: '', lists: [], drawings: [{ title: '', data: '[]' }] });
     } else {
-      setEditingNote(null);
+      setEditingNote(null); // text mode
     }
     setIsNoteModalOpen(true);
   };
@@ -113,6 +115,7 @@ const Dashboard = () => {
   };
 
   const openEditModal = (note) => {
+    setModalMode('default');
     setEditingNote(note);
     setIsNoteModalOpen(true);
   };
@@ -250,6 +253,7 @@ const Dashboard = () => {
         onSubmit={handleCreateOrUpdateNote}
         isLoading={isSubmitting}
         defaultValues={editingNote}
+        mode={modalMode}
       />
 
       {/* Delete Confirmation Modal */}

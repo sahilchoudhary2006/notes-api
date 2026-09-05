@@ -150,7 +150,7 @@ const ListEditor = ({ listIndex, control, register, removeList, watch, setValue 
   );
 };
 
-const NoteModal = ({ isOpen, onClose, onSubmit, isLoading, defaultValues }) => {
+const NoteModal = ({ isOpen, onClose, onSubmit, isLoading, defaultValues, mode = 'default' }) => {
   const isEditing = !!defaultValues?._id;
 
   const { register, handleSubmit, reset, control, watch, setValue, formState: { errors } } = useForm({
@@ -200,66 +200,71 @@ const NoteModal = ({ isOpen, onClose, onSubmit, isLoading, defaultValues }) => {
           {...register('title')}
         />
         
-        <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Description (Optional)
-          </label>
-          <textarea
-            id="description"
-            rows={3}
-            className={cn(
-              "flex w-full rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent resize-y dark:border-gray-700 dark:text-gray-50 dark:focus:ring-blue-500",
-              errors.description && "border-red-500 focus:ring-red-500"
-            )}
-            placeholder="Write your note here..."
-            {...register('description')}
-          />
-          <div className="flex justify-end items-center mt-1">
-            <span className={cn("text-xs", charCount > 5000 ? "text-red-500" : "text-gray-500")}>
-              {charCount} / 5000
-            </span>
-          </div>
-        </div>
-
-        {/* Content Blocks Section */}
-        <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex flex-wrap items-center justify-between mb-3 gap-2">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Blocks
+        {mode !== 'drawing' && mode !== 'list' && (
+          <div>
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Description (Optional)
             </label>
-            <div className="flex flex-wrap gap-2">
-              <Button 
-                type="button" 
-                variant="outline" 
-                size="sm"
-                onClick={() => appendList({ title: '', type: 'checklist', items: [] })}
-                className="text-xs py-1 h-auto"
-              >
-                <CheckSquare className="h-3.5 w-3.5 mr-1.5" />
-                Checklist
-              </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
-                size="sm"
-                onClick={() => appendList({ title: '', type: 'bullet', items: [] })}
-                className="text-xs py-1 h-auto"
-              >
-                <ListIcon className="h-3.5 w-3.5 mr-1.5" />
-                Bullets
-              </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
-                size="sm"
-                onClick={() => appendDrawing({ title: '', data: '[]' })}
-                className="text-xs py-1 h-auto"
-              >
-                <PenTool className="h-3.5 w-3.5 mr-1.5" />
-                Whiteboard
-              </Button>
+            <textarea
+              id="description"
+              rows={3}
+              className={cn(
+                "flex w-full rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent resize-y dark:border-gray-700 dark:text-gray-50 dark:focus:ring-blue-500",
+                errors.description && "border-red-500 focus:ring-red-500"
+              )}
+              placeholder="Write your note here..."
+              {...register('description')}
+            />
+            <div className="flex justify-end items-center mt-1">
+              <span className={cn("text-xs", charCount > 5000 ? "text-red-500" : "text-gray-500")}>
+                {charCount} / 5000
+              </span>
             </div>
           </div>
+        )}
+
+        {/* Content Blocks Section */}
+        {mode !== 'text' && (
+          <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+            {mode === 'default' && (
+              <div className="flex flex-wrap items-center justify-between mb-3 gap-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Blocks
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => appendList({ title: '', type: 'checklist', items: [] })}
+                    className="text-xs py-1 h-auto"
+                  >
+                    <CheckSquare className="h-3.5 w-3.5 mr-1.5" />
+                    Checklist
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => appendList({ title: '', type: 'bullet', items: [] })}
+                    className="text-xs py-1 h-auto"
+                  >
+                    <ListIcon className="h-3.5 w-3.5 mr-1.5" />
+                    Bullets
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => appendDrawing({ title: '', data: '[]' })}
+                    className="text-xs py-1 h-auto"
+                  >
+                    <PenTool className="h-3.5 w-3.5 mr-1.5" />
+                    Whiteboard
+                  </Button>
+                </div>
+              </div>
+            )}
 
           <div className="space-y-4">
             {listFields.map((listField, index) => (
@@ -285,13 +290,14 @@ const NoteModal = ({ isOpen, onClose, onSubmit, isLoading, defaultValues }) => {
               />
             ))}
             
-            {listFields.length === 0 && drawingFields.length === 0 && (
+            {listFields.length === 0 && drawingFields.length === 0 && mode === 'default' && (
               <div className="text-center py-6 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg text-gray-500 dark:text-gray-400 text-sm">
                 No blocks added yet. Use the buttons above to add lists or whiteboards.
               </div>
             )}
           </div>
         </div>
+        )}
 
         <div className="pt-4 flex justify-end gap-3 sticky bottom-0 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 py-3 mt-4">
           <Button type="button" variant="ghost" onClick={onClose}>
