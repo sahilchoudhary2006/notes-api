@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, Search as SearchIcon, AlertTriangle, FileX2 } from 'lucide-react';
+import { Plus, Search as SearchIcon, AlertTriangle, FileX2, Type, CheckSquare, PenTool } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getNotes, createNote, updateNote, deleteNote } from '../services/notes.api';
@@ -10,6 +10,7 @@ import { Modal } from '../components/ui/Modal';
 import NoteCard from '../components/notes/NoteCard';
 import NoteModal from '../components/notes/NoteModal';
 import Pagination from '../components/notes/Pagination';
+import { cn } from '../utils/cn';
 
 const Dashboard = () => {
   const [notes, setNotes] = useState([]);
@@ -22,8 +23,22 @@ const Dashboard = () => {
   const [sort, setSort] = useState('latest');
 
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
+  const [isFabOpen, setIsFabOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingNote, setEditingNote] = useState(null);
+
+  const openCreateModal = (type) => {
+    setIsFabOpen(false);
+    if (type === 'list') {
+      setEditingNote({ title: '', description: '', lists: [{ title: '', type: 'checklist', items: [] }], drawings: [] });
+    } else if (type === 'drawing') {
+      setEditingNote({ title: '', description: '', lists: [], drawings: [{ title: '', data: '[]' }] });
+    } else {
+      setEditingNote(null);
+    }
+    setIsNoteModalOpen(true);
+  };
+
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [noteToDelete, setNoteToDelete] = useState(null);
@@ -265,6 +280,62 @@ const Dashboard = () => {
           </div>
         </div>
       </Modal>
+
+      {/* Floating Action Button (FAB) */}
+      <div className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-50 flex flex-col items-end gap-3">
+        <AnimatePresence>
+          {isFabOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: 15, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 15, scale: 0.9 }}
+              transition={{ duration: 0.2 }}
+              className="flex flex-col items-end gap-3 mb-2"
+            >
+              <button
+                onClick={() => openCreateModal('drawing')}
+                className="flex items-center gap-3 group"
+              >
+                <span className="bg-gray-800 text-white text-xs font-medium py-1.5 px-3 rounded-lg shadow-md opacity-0 group-hover:opacity-100 transition-opacity">Drawing</span>
+                <div className="bg-emerald-600 hover:bg-emerald-700 text-white p-3 rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95">
+                  <PenTool className="h-5 w-5" />
+                </div>
+              </button>
+              
+              <button
+                onClick={() => openCreateModal('list')}
+                className="flex items-center gap-3 group"
+              >
+                <span className="bg-gray-800 text-white text-xs font-medium py-1.5 px-3 rounded-lg shadow-md opacity-0 group-hover:opacity-100 transition-opacity">List</span>
+                <div className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95">
+                  <CheckSquare className="h-5 w-5" />
+                </div>
+              </button>
+              
+              <button
+                onClick={() => openCreateModal('text')}
+                className="flex items-center gap-3 group"
+              >
+                <span className="bg-gray-800 text-white text-xs font-medium py-1.5 px-3 rounded-lg shadow-md opacity-0 group-hover:opacity-100 transition-opacity">Text Note</span>
+                <div className="bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95">
+                  <Type className="h-5 w-5" />
+                </div>
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <button
+          onClick={() => setIsFabOpen(!isFabOpen)}
+          className={cn(
+            "p-4 rounded-full shadow-xl transition-all duration-300 hover:scale-105 active:scale-95",
+            isFabOpen ? "bg-gray-800 dark:bg-gray-700 text-white rotate-45" : "bg-blue-600 hover:bg-blue-700 text-white"
+          )}
+        >
+          <Plus className="h-6 w-6" />
+        </button>
+      </div>
+
     </div>
   );
 };
