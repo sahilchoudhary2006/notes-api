@@ -23,6 +23,17 @@ const getAllNotes = async (req, res) => {
         ];
     }
 
+    if (req.validated.query.type) {
+        if (req.validated.query.type === 'drawing') {
+            filter["drawings.0"] = { $exists: true };
+        } else if (req.validated.query.type === 'list') {
+            filter["lists.0"] = { $exists: true };
+        } else if (req.validated.query.type === 'text') {
+            filter["drawings.0"] = { $exists: false };
+            filter["lists.0"] = { $exists: false };
+        }
+    }
+
     const notes = await Note.find(filter)
         .sort({ createdAt: sortOrder })
         .skip(skip)

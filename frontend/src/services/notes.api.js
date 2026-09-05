@@ -1,7 +1,7 @@
 import api from './api';
 
 export const getNotes = async (params = {}) => {
-  const { page = 1, limit = 10, search = '', sort = 'latest' } = params;
+  const { page = 1, limit = 10, search = '', sort = 'latest', type = 'all' } = params;
   
   // Construct query string manually or via URLSearchParams
   const queryParams = new URLSearchParams({
@@ -11,6 +11,7 @@ export const getNotes = async (params = {}) => {
   
   if (search) queryParams.append('search', search);
   if (sort) queryParams.append('sort', sort);
+  if (type && type !== 'all') queryParams.append('type', type);
 
   const response = await api.get(`/notes?${queryParams.toString()}`);
   return response.data;

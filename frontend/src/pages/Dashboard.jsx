@@ -21,6 +21,7 @@ const Dashboard = () => {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [sort, setSort] = useState('latest');
+  const [filterType, setFilterType] = useState('all');
 
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState('default');
@@ -61,10 +62,15 @@ const Dashboard = () => {
     setPage(1);
   };
 
+  const handleFilterChange = (type) => {
+    setFilterType(type);
+    setPage(1);
+  };
+
   const fetchNotes = useCallback(async () => {
     try {
       setIsLoading(true);
-      const res = await getNotes({ page, limit: 12, search: debouncedSearch, sort });
+      const res = await getNotes({ page, limit: 12, search: debouncedSearch, sort, type: filterType });
       setNotes(res.data);
       setPagination(res.pagination);
     } catch (error) {
@@ -72,7 +78,7 @@ const Dashboard = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [page, debouncedSearch, sort]);
+  }, [page, debouncedSearch, sort, filterType]);
 
   useEffect(() => {
     fetchNotes();
@@ -203,15 +209,31 @@ const Dashboard = () => {
             className="pl-10 w-full h-10 rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent dark:border-gray-700 dark:text-gray-50"
           />
         </div>
-        <div className="w-full sm:w-48">
-          <select
-            value={sort}
-            onChange={handleSortChange}
-            className="w-full h-10 rounded-md border border-gray-300 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent dark:border-gray-700 dark:text-gray-50 cursor-pointer"
-          >
-            <option value="latest">Latest First</option>
-            <option value="oldest">Oldest First</option>
-          </select>
+        <div className="flex gap-2 flex-wrap items-center">
+          {['all', 'text', 'list', 'drawing'].map((type) => (
+            <button
+              key={type}
+              onClick={() => handleFilterChange(type)}
+              className={cn(
+                "px-4 h-10 rounded-md text-sm font-medium transition-colors capitalize",
+                filterType === type 
+                  ? "bg-gray-900 text-white dark:bg-white dark:text-gray-900" 
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+              )}
+            >
+              {type}
+            </button>
+          ))}
+          <div className="w-full sm:w-40 sm:ml-2">
+            <select
+              value={sort}
+              onChange={handleSortChange}
+              className="w-full h-10 rounded-md border border-gray-300 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent dark:border-gray-700 dark:text-gray-50 cursor-pointer"
+            >
+              <option value="latest">Latest First</option>
+              <option value="oldest">Oldest First</option>
+            </select>
+          </div>
         </div>
       </div>
 
