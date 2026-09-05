@@ -115,7 +115,21 @@ const Dashboard = () => {
   };
 
   const openEditModal = (note) => {
-    setModalMode('default');
+    let mode = 'default';
+    
+    const hasDrawing = note.drawings && note.drawings.length > 0;
+    const hasList = note.lists && note.lists.length > 0;
+    const hasDescription = note.description && note.description.trim().length > 0;
+
+    if (hasDrawing && !hasList && !hasDescription) {
+      mode = 'drawing';
+    } else if (hasList && !hasDrawing && !hasDescription) {
+      mode = 'list';
+    } else if (!hasDrawing && !hasList) {
+      mode = 'text';
+    }
+
+    setModalMode(mode);
     setEditingNote(note);
     setIsNoteModalOpen(true);
   };
